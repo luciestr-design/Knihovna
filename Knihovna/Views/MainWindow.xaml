@@ -1,12 +1,44 @@
-﻿<Window x:Class="Knihovna.MainWindow"
+﻿<Window x:Class="Knihovna.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Knihovna"
+        xmlns:vm="clr-namespace:Knihovna.ViewModels"
         mc:Ignorable="d"
-        Title="Knihovní systém" Height="450" Width="800">
-    <Grid>
+        Title="Databázový systém knihovny" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
 
+    <Window.DataContext>
+        <vm:MainWindowVM/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Background="#EEE" Padding="20">
+            <TextBlock Text="Databázový systém knihovny" 
+                       FontSize="30" FontWeight="Bold" HorizontalAlignment="Center"/>
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <Button Command="{Binding OpenKnihyCommand}" 
+                    Content="Knihy" Width="150" Height="60" Margin="10" FontSize="18"/>
+
+            <Button Command="{Binding OpenUzivateleCommand}" 
+                    Content="Uživatelé" Width="150" Height="60" Margin="10" FontSize="18"/>
+
+            <Button Command="{Binding OpenVypujckyCommand}" 
+                    Content="Výpůjčky" Width="150" Height="60" Margin="10" FontSize="18"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Text="© 2025 Knihovna App" 
+                   HorizontalAlignment="Right" Margin="5" Foreground="Gray"/>
     </Grid>
 </Window>

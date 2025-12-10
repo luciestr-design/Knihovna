@@ -1,6 +1,7 @@
 ﻿using PropertyChanged;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -9,15 +10,16 @@ using System.Threading.Tasks;
 
 namespace DataEntity.Data
 {
-    [AddINotifyPropertyChangedInterface()]
+    [AddINotifyPropertyChangedInterface]
     [Table("Knihy")]
     public class Knihy : Base.BaseModel
     {
         [Key]
         public int KnihaId { get; set; }
+
         [Required(ErrorMessage = "Název knihy je povinné pole")]
         [StringLength(250, ErrorMessage = "Maximální délka je 250")]
-        public string Nazev { get; set; } = string.Empty;   
+        public string Nazev { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Autor je povinné pole")]
         [StringLength(150, ErrorMessage = "Maximální délka je 150")]
@@ -39,8 +41,10 @@ namespace DataEntity.Data
         [Required(ErrorMessage = "Počet kusů k dispozici je povinné pole")]
         [Range(0, int.MaxValue, ErrorMessage = "Počet kusů k dispozici musí být kladné nebo 0")]
         public int KusuKDispozici { get; set; } = 1;
+
+        // --- NOVÉ: Vazba, abychom viděli historii výpůjček této knihy ---
+        public virtual ObservableCollection<Vypujcka> Vypujcky { get; set; } = new ObservableCollection<Vypujcka>();
     }
 }
 
 
-  

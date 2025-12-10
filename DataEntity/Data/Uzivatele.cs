@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataEntity.Data
 {
-    [AddINotifyPropertyChangedInterface()]
+    [AddINotifyPropertyChangedInterface]
     [Table("Uzivatele")]
     public class Uzivatel : Base.BaseModel
     {
@@ -35,6 +35,7 @@ namespace DataEntity.Data
         [Range(0, double.MaxValue, ErrorMessage = "Dluh musí být nezáporné číslo")]
         public decimal Dluh { get; set; } = 0m;
 
-        public virtual ObservableCollection<Vypujcka>? Vypujcky { get; set; }
+        // --- Bezpečnější inicializace kolekce ---
+        public virtual ObservableCollection<Vypujcka> Vypujcky { get; set; } = new ObservableCollection<Vypujcka>();
     }
 }

@@ -21,8 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Converters\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Globals\" />
     <Folder Include="Images\" />
   </ItemGroup>
 

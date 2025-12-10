@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataEntity.Data
 {
-    [AddINotifyPropertyChangedInterface()]
+    [AddINotifyPropertyChangedInterface]
     [Table("Vypujcky")]
     [Index(nameof(UzivatelId))]
     [Index(nameof(KnihaId))]
@@ -27,12 +27,14 @@ namespace DataEntity.Data
         public DateTime DatumPujceni { get; set; } = DateTime.Now;
 
         [Column(TypeName = "date")]
-        public DateTime DatumSplatnosti { get; set; } = DateTime.Now.AddDays(14);
+        public DateTime DatumSplatnosti { get; set; } = DateTime.Now.AddDays(14); // Příklad: splatnost 14 dní
 
         [Column(TypeName = "date")]
         public DateTime? DatumVraceni { get; set; }
 
-        [StringLength(100)]
-        public string? Stav { get; set; } = "vypůjčeno";
+        // --- Zde zůstává string, výchozí hodnota je "Vypůjčeno" ---
+        [Required(ErrorMessage = "Stav je povinné pole")]
+        [StringLength(50)]
+        public string Stav { get; set; } = "Vypůjčeno";
     }
 }
