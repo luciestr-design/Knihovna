@@ -2,9 +2,10 @@
 using Knihovna.Globals;
 using Knihovna.Helpers;
 using Microsoft.EntityFrameworkCore;
-using PropertyChanged;
+using PropertyChanged; // Stále necháváme, ale pro klíčovou vlastnost použijeme ruční notifikaci
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -14,90 +15,135 @@ namespace Knihovna.ViewModels
     [AddINotifyPropertyChangedInterface]
     public class KnihyVM : BaseVM
     {
-        // "null!" = Slibujeme, že to naplníme v konstruktoru
-        public ObservableCollection<Knihy> KnihyCol { get; set; } = null!;
+        public ObservableCollection<Knihy> KnihyCol { get; set; } = new ObservableCollection<Knihy>();
+        public ICollectionView? KnihyView { get; set; }
+        public ObservableCollection<int> SeznamRoku { get; set; } = new ObservableCollection<int>();
 
-        public ICollectionView KnihyView { get; set; } = null!;
-
-        // ZDE JE ZMĚNA: Přidali jsme otazník "?", protože na začátku není vybrána žádná kniha
-        public Knihy? SelectedKniha { get; set; }
-
-        private string _filtrRok = string.Empty; // Inicializujeme prázdným řetězcem
-        public string FiltrRok
+        // --- ZMĚNA: Ručně implementovaná vlastnost pro jistotu ---
+        private Knihy? _vybranaKniha;
+        public Knihy? VybranaKniha
         {
-            get => _filtrRok;
+            get => _vybranaKniha;
             set
             {
-                _filtrRok = value;
-                KnihyView.Refresh();
+                if (_vybranaKniha != value)
+                {
+                    _vybranaKniha = value;
+                    // Vynucení aktualizace UI
+                    OnPropertyChanged(nameof(VybranaKniha));
+                    OnPropertyChanged(nameof(JeKnihaVybrana));
+                }
             }
         }
 
-        // "null!" = Slibujeme naplnění v konstruktoru
-        public ICommand PridatCommand { get; } = null!;
-        public ICommand SmazatCommand { get; } = null!;
-        public ICommand UlozitCommand { get; } = null!;
+        public bool JeKnihaVybrana => VybranaKniha != null;
+
+        // --- FILTRY ---
+        private string _hledanyText = "";
+        public string HledanyText
+        {
+            get { return _hledanyText; }
+            set
+            {
+                if (_hledanyText != value)
+                {
+                    _hledanyText = value;
+                    ObnovitFiltr();
+                }
+            }
+        }
+
+        private int? _vybranyRok = null;
+        public int? VybranyRok
+        {
+            get { return _vybranyRok; }
+            set
+            {
+                if (_vybranyRok != value)
+                {
+                    _vybranyRok = value;
+                    ObnovitFiltr();
+                }
+            }
+        }
+
+        public ICommand PridatCommand { get; set; }
+        public ICommand SmazatCommand { get; set; }
+        public ICommand UlozitCommand { get; set; }
+        public ICommand ZrusitFiltrRokuCommand { get; set; }
 
         public KnihyVM()
         {
-            // 1. Načtení dat
+            PridatCommand = new RelayCommand(o => PridatKnihu());
+            SmazatCommand = new RelayCommand(o => SmazatKnihu());
+            UlozitCommand = new RelayCommand(o => UlozitZmeny());
+            ZrusitFiltrRokuCommand = new RelayCommand(o => { VybranyRok = null; });
+
+            NacistData();
+        }
+
+        public void NacistData()
+        {
+            if (AppGlobals.Context == null) return;
+
+            // Načtení dat (Load() zajistí stažení do lokální cache, .Local.ToObservableCollection je rychlejší pro binding)
+            // Toto je stejný styl jako máte v UzivateleVM
             AppGlobals.Context.Knihy.Load();
             KnihyCol = AppGlobals.Context.Knihy.Local.ToObservableCollection();
 
-            // 2. Filtrování
-            KnihyView = CollectionViewSource.GetDefaultView(KnihyCol);
-            KnihyView.Filter = FilterLogika;
+            var roky = KnihyCol.Select(k => k.RokVydani).Distinct().OrderByDescending(r => r).ToList();
+            SeznamRoku = new ObservableCollection<int>(roky);
 
-            // 3. Tlačítka
-            PridatCommand = new RelayCommand(ExecutePridat);
-            SmazatCommand = new RelayCommand(ExecuteSmazat, CanExecuteSmazat);
-            UlozitCommand = new RelayCommand(ExecuteUlozit);
+            KnihyView = CollectionViewSource.GetDefaultView(KnihyCol);
+            KnihyView.Filter = FilterKnihy;
         }
 
-        private bool FilterLogika(object item)
+        private bool FilterKnihy(object item)
         {
-            if (string.IsNullOrEmpty(FiltrRok)) return true;
-
             if (item is Knihy kniha)
             {
-                return kniha.RokVydani.ToString().Contains(FiltrRok);
+                bool textShoda = string.IsNullOrEmpty(HledanyText) ||
+                                 kniha.Nazev.ToLower().Contains(HledanyText.ToLower()) ||
+                                 kniha.Autor.ToLower().Contains(HledanyText.ToLower());
+                bool rokShoda = (VybranyRok == null) || (kniha.RokVydani == VybranyRok);
+                return textShoda && rokShoda;
             }
             return false;
         }
 
-        private void ExecutePridat(object obj)
+        private void ObnovitFiltr()
         {
-            var novaKniha = new Knihy
-            {
-                Nazev = "Nová kniha",
-                Autor = "Neznámý autor", // Doplněno, aby nebyl null
-                RokVydani = 2025,
-                CelkemKusu = 1,
-                KusuKDispozici = 1,
-                ISBN = "000-00-000"     // Doplněno
-            };
-            AppGlobals.Context.Knihy.Add(novaKniha);
-            SelectedKniha = novaKniha;
+            KnihyView?.Refresh();
         }
 
-        private void ExecuteSmazat(object obj)
+        private void PridatKnihu()
         {
-            // Kontrola pro jistotu, i když CanExecute to hlídá
-            if (SelectedKniha == null) return;
+            var nova = new Knihy { Nazev = "Nová kniha", Autor = "Neznámý", RokVydani = 2025 };
+            // Díky .Local.ToObservableCollection se přidáním do Contextu automaticky přidá i do KnihyCol
+            AppGlobals.Context.Knihy.Add(nova);
+            VybranaKniha = nova;
+        }
 
-            if (MessageBox.Show($"Opravdu smazat knihu '{SelectedKniha.Nazev}'?", "Smazat",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        private void SmazatKnihu()
+        {
+            if (VybranaKniha == null) return;
+
+            if (VybranaKniha.Vypujcky != null && VybranaKniha.Vypujcky.Any())
             {
-                AppGlobals.Context.Knihy.Remove(SelectedKniha);
+                MessageBox.Show("Nelze smazat knihu s historií výpůjček.", "Chyba", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (MessageBox.Show($"Opravdu smazat knihu '{VybranaKniha.Nazev}'?", "Smazat", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                AppGlobals.Context.Knihy.Remove(VybranaKniha);
+                AppGlobals.UlozitData();
+                // Pokud by se to nesmazalo z UI samo (občas se stane u Local bindingu), tak:
+                // KnihyCol.Remove(VybranaKniha); 
             }
         }
 
-        private bool CanExecuteSmazat(object obj)
-        {
-            return SelectedKniha != null;
-        }
-
-        private void ExecuteUlozit(object obj)
+        private void UlozitZmeny()
         {
             AppGlobals.UlozitData();
         }

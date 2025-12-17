@@ -21,21 +21,24 @@ namespace DataEntity.Data
         [StringLength(100, ErrorMessage = "Maximální délka je 100")]
         public string Prijmeni { get; set; } = string.Empty;
 
+        // --- ZMĚNA: Přidáno Required (povinné) ---
+        [Required(ErrorMessage = "Adresa je povinný údaj")]
         [StringLength(300, ErrorMessage = "Maximální délka adresy je 300")]
-        public string? Adresa { get; set; }
+        public string Adresa { get; set; } = string.Empty;
 
         [StringLength(200, ErrorMessage = "Maximální délka e-mailu je 200")]
         [EmailAddress(ErrorMessage = "Neplatný formát e-mailu")]
         public string? Email { get; set; }
 
+        // --- ZMĚNA: Přidáno Required (povinné) ---
+        [Required(ErrorMessage = "Telefon je povinný údaj")]
         [StringLength(50, ErrorMessage = "Maximální délka telefonu je 50")]
-        public string? Telefon { get; set; }
+        [Phone]
+        public string Telefon { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue, ErrorMessage = "Dluh musí být nezáporné číslo")]
         public decimal Dluh { get; set; } = 0m;
 
-        // --- Bezpečnější inicializace kolekce ---
         public virtual ObservableCollection<Vypujcka> Vypujcky { get; set; } = new ObservableCollection<Vypujcka>();
     }
 }

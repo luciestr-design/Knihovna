@@ -3,42 +3,111 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Knihovna"
+        xmlns:local="clr-namespace:Knihovna.Views"
         xmlns:vm="clr-namespace:Knihovna.ViewModels"
         mc:Ignorable="d"
-        Title="Databázový systém knihovny" Height="450" Width="800"
-        WindowStartupLocation="CenterScreen">
+        Title="Knihovní systém 2025" Height="550" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#F4F6F9">
+    <Window.Resources>
+        <Style x:Key="MenuCardButton" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="160"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#BBBBBB" Direction="320" ShadowDepth="4" BlurRadius="15" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="20" BorderBrush="#E0E0E0" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F0F7FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#4A90E2"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#DBEAFE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-    <Window.DataContext>
-        <vm:MainWindowVM/>
-    </Window.DataContext>
+        <Style x:Key="ButtonTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#2D3E50"/>
+            <Setter Property="Margin" Value="0,15,0,5"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="IconStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="48"/>
+            <Setter Property="Foreground" Value="#4A90E2"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="120"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
 
-        <Border Background="#EEE" Padding="20">
-            <TextBlock Text="Databázový systém knihovny" 
-                       FontSize="30" FontWeight="Bold" HorizontalAlignment="Center"/>
+        <Border Grid.Row="0" Background="#2D3E50">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="30,0,0,0">
+                <Border Width="60" Height="60" CornerRadius="30" Background="White" Margin="0,0,20,0">
+                    <TextBlock Text="&#xE82D;" FontFamily="Segoe MDL2 Assets" FontSize="30" Foreground="#2D3E50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="KNIHOVNA" FontSize="32" FontWeight="Bold" Foreground="White" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Informační systém pro správu výpůjček" FontSize="14" Foreground="#CCCCCC" Margin="2,5,0,0"/>
+                </StackPanel>
+            </StackPanel>
         </Border>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" 
-                    HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Viewbox Grid.Row="1" Stretch="Uniform">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
 
-            <Button Command="{Binding OpenKnihyCommand}" 
-                    Content="Knihy" Width="150" Height="60" Margin="10" FontSize="18"/>
+                <Button Command="{Binding OpenKnihyCommand}" Style="{StaticResource MenuCardButton}">
+                    <StackPanel>
+                        <TextBlock Text="&#xE8F1;" Style="{StaticResource IconStyle}"/>
+                        <TextBlock Text="Knihy" Style="{StaticResource ButtonTextStyle}"/>
+                        <TextBlock Text="Katalog a sklad" FontSize="12" Foreground="Gray" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
 
-            <Button Command="{Binding OpenUzivateleCommand}" 
-                    Content="Uživatelé" Width="150" Height="60" Margin="10" FontSize="18"/>
+                <Button Command="{Binding OpenUzivateleCommand}" Style="{StaticResource MenuCardButton}">
+                    <StackPanel>
+                        <TextBlock Text="&#xE77B;" Style="{StaticResource IconStyle}"/>
+                        <TextBlock Text="Uživatelé" Style="{StaticResource ButtonTextStyle}"/>
+                        <TextBlock Text="Databáze čtenářů" FontSize="12" Foreground="Gray" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
 
-            <Button Command="{Binding OpenVypujckyCommand}" 
-                    Content="Výpůjčky" Width="150" Height="60" Margin="10" FontSize="18"/>
-        </StackPanel>
+                <Button Command="{Binding OpenVypujckyCommand}" Style="{StaticResource MenuCardButton}">
+                    <StackPanel>
+                        <TextBlock Text="&#xE787;" Style="{StaticResource IconStyle}"/>
+                        <TextBlock Text="Výpůjčky" Style="{StaticResource ButtonTextStyle}"/>
+                        <TextBlock Text="Půjčit / Vrátit" FontSize="12" Foreground="Gray" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
 
-        <TextBlock Grid.Row="2" Text="© 2025 Knihovna App" 
-                   HorizontalAlignment="Right" Margin="5" Foreground="Gray"/>
+            </StackPanel>
+        </Viewbox>
+
+        <TextBlock Grid.Row="2" Text="© 2025 Semestrální práce - Knihovní systém" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#999999"/>
     </Grid>
 </Window>

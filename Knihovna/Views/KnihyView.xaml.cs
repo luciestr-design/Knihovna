@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Knihovna.ViewModels;
+using DataEntity.Data; // Aby znal typ "Knihy"
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Knihovna.Views
 {
-    /// <summary>
-    /// Interaction logic for KnihyView.xaml
-    /// </summary>
     public partial class KnihyView : Window
     {
         public KnihyView()
         {
             InitializeComponent();
+            DataContext = new KnihyVM();
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is KnihyVM vm)
+            {
+                var vybranaKniha = ((DataGrid)sender).SelectedItem as Knihy;
+                vm.VybranaKniha = vybranaKniha;
+            }
         }
     }
 }
